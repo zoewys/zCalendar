@@ -1,0 +1,31 @@
+table{
+    border-collapse: collapse;
+}
+
+thead tr,
+tbody{
+    border:1px solid #ccc;
+}
+
+th, td{
+    /*border:1px solid #ccc;*/
+    padding:10px;
+    text-align: center;
+}
+
+[data-zc-method]:not(.disable):hover{
+    cursor: pointer;
+    background-color:#ccc;
+}
+
+td.active{
+    background-color: #ccc;
+}
+
+td.disable{
+    opacity: 0.5;
+}
+
+td.disable:hover{
+    cursor: not-allowed;
+}

@@ -12,11 +12,16 @@
 <body>
     <div id="calendar" style="margin:30px"></div>
 
+    <button id="setSelected">set</button>
+
+    <button id="getSelected">get</button>
+
     <script>
         $(document).ready(function(){
 
             var zc = $('#calendar').zCalendar({
-                maxDate:new Date('2016'),
+                maxDate:new Date('2016-03-1'),
+                minDate:new Date('2016-02-02'),
                 listeners:{
                     onSelected:function(date){
                         alert('You select ' + date);
@@ -24,6 +29,13 @@
                 }
             });
 
+            $('#setSelected').on('click',function(){
+                zc.setSelectedDate(new Date(2016,1,2))
+            });
+
+            $('#getSelected').on('click',function(){
+               alert(zc.getSelectedDate());
+            });
 //            debugger;
         });
     </script>

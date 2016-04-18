@@ -84,6 +84,7 @@ if (typeof jQuery === "undefined") { throw new Error("Requires jQuery") }
         'toyearclick':function(){
             setMode(_consts.yearMode);
         },
+
         'dateselect':function(e){
             var activeItem = $('['+_consts.clickAttr+'].active');
             if(activeItem){
@@ -91,6 +92,8 @@ if (typeof jQuery === "undefined") { throw new Error("Requires jQuery") }
             }
             var clickEl = $(e.target);
             clickEl.addClass(_consts.activeCls);
+
+            settings.selectedDate = clickEl.data('date');
             settings.listeners.onSelected.call(clickEl,clickEl.data('date'));
         },
         'monthselect':function(e){
@@ -118,6 +121,9 @@ if (typeof jQuery === "undefined") { throw new Error("Requires jQuery") }
                 return _consts.month[date.getMonth()]+' '+date.getFullYear();
             },
             getShowData:function(date){
+                var maxDate = settings.maxDate;
+                var minDate = settings.minDate;
+
                 var firstDate = tools.getFirstDateInMonth(date);
                 var data = [];
                 var start = firstDate.getDay();
@@ -128,6 +134,15 @@ if (typeof jQuery === "undefined") { throw new Error("Requires jQuery") }
                         date:cellDate
                     };
                     if(cellDate.getMonth()!== firstDate.getMonth()){
+                        cellObj['disable'] = true;
+                    }
+                    if(settings.selectedDate && cellDate.getTime() == settings.selectedDate.getTime()){
+                        cellObj['active'] = true;
+                    }
+                    if(maxDate && cellDate.getTime()> maxDate){
+                        cellObj['disable'] = true;
+                    }
+                    if(minDate && cellDate.getTime()<minDate){
                         cellObj['disable'] = true;
                     }
                     data.push(cellObj);
@@ -253,7 +268,7 @@ if (typeof jQuery === "undefined") { throw new Error("Requires jQuery") }
                         .data('date',data[cell].date);
 
                     data[cell].disable && td.addClass(_consts.disableCls);
-                    data[cell].active && td.addClass(_consts.active);
+                    data[cell].active && td.addClass(_consts.activeCls);
                     tr.append(td);
                     cell++;
                 }
@@ -347,18 +362,15 @@ if (typeof jQuery === "undefined") { throw new Error("Requires jQuery") }
 
             settings:settings,
 
-            // goNext:goNext,
-            //
-            // goPrev:goPrev,
-
             getSelectedDate:function(){
-
+                return settings.selectedDate;
             },
-            setSelectedDate:function(){
+            setSelectedDate:function(date){
+                settings.selectedDate = date;
+                setDate(date);
+            }
 
-            },
-
-            setDate:setDate
+            // setDate:setDate
         };
 
         return exports;

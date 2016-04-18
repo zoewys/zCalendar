@@ -15,11 +15,13 @@ th, td{
 
 [data-zc-method]:not(.disable):hover{
     cursor: pointer;
-    background-color:#ccc;
+    background-color: #08c;
+    color:#fff;
 }
 
 td.active{
-    background-color: #ccc;
+    background-color: #08c;
+    color:#fff;
 }
 
 td.disable{

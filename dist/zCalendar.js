@@ -7,12 +7,34 @@ if (typeof jQuery === "undefined") { throw new Error("Requires jQuery") }
 (function($){
 
     var settings = {};
+    var modeParams = {};
     var zCalendarContainer;
 
     var tools = {
         findDay:function(start,days){
             var time = start.getTime() + days*24*3600*1000;
             return new Date(time);
+        },
+        getNextMonth:function(date){
+            var nextMonth;
+            if (date.getMonth() == 11) {
+                nextMonth = new Date(date.getFullYear() + 1, 0, 1);
+            } else {
+                nextMonth = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+            }
+            return nextMonth;
+        },
+        getPrevMonth:function(date){
+            var prevMonth;
+            if (date.getMonth() == 0) {
+                prevMonth = new Date(date.getFullYear() - 1, 11, 1);
+            } else {
+                prevMonth = new Date(date.getFullYear(), date.getMonth() - 1, 1);
+            }
+            return prevMonth;
+        },
+        findYear:function(date,years){
+            return new Date(date.getFullYear()+years,date.getMonth(),date.getDate());
         },
         getFirstDateInMonth:function(date){
             return new Date(date.getFullYear()+'-'+(date.getMonth()+1));
@@ -39,23 +61,28 @@ if (typeof jQuery === "undefined") { throw new Error("Requires jQuery") }
         week:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
         leftText:' < ',
         rightText:' > ',
-        clickAttr:'data-zc-method'
+        clickAttr:'data-zc-method',
+        dayMode:'day',
+        monthMode:'month',
+        yearMode:'year'
     };
 
     // click event trigger list
     var _clickEventList = {
 
         'nextclick':function(){
-            var date = settings.date;
+            var nextDate = modeParams[settings.mode].getNextDate(settings.date);
+            setDate(nextDate);
         },
         'prevclick':function(){
-            console.log('prevclick')
+            var prevDate = modeParams[settings.mode].getPrevDate(settings.date);
+            setDate(prevDate);
         },
-        'dateclick':function(){
-            console.log('dayclick')
+        'tomonthclick':function(){
+            setMode(_consts.monthMode);
         },
-        'monthclick':function(){
-            console.log('monthclick')
+        'toyearclick':function(){
+            setMode(_consts.yearMode);
         },
         'dateselect':function(e){
             var activeItem = $('['+_consts.clickAttr+'].active');
@@ -66,22 +93,26 @@ if (typeof jQuery === "undefined") { throw new Error("Requires jQuery") }
             clickEl.addClass(_consts.activeCls);
             settings.listeners.onSelected.call(clickEl,clickEl.data('date'));
         },
-        'monthselect':function(){
-
+        'monthselect':function(e){
+            var $item = $(e.target);
+            var date = $item.data('date');
+            setDate(date,_consts.dayMode);
         },
-        'yearselect':function(){
-
+        'yearselect':function(e){
+            var $item = $(e.target);
+            var date = $item.data('date');
+            setDate(date,_consts.monthMode);
         }
     };
 
-    var modeParams = {
-
-        'day':{
+    var initModeParams = function(modeParams){
+        
+        modeParams[_consts.dayMode] = {
             column:7,
             row:6,
             cell:42,
             headColspan:5,
-            headTitleEvent:'dayclick',
+            headTitleEvent:'tomonthclick',
             tdClick:'dateselect',
             getHeadTitle:function(date){
                 return _consts.month[date.getMonth()]+' '+date.getFullYear();
@@ -103,14 +134,21 @@ if (typeof jQuery === "undefined") { throw new Error("Requires jQuery") }
                     cellDate = tools.findDay(cellDate,1);
                 }
                 return data;
+            },
+            getNextDate:function(date){
+                return tools.getNextMonth(date);
+            },
+            getPrevDate:function(date){
+                return tools.getPrevMonth(date);
             }
-        },
-        'month':{
+        };
+        
+        modeParams[_consts.monthMode] = {
             column:3,
             row:4,
             cell:12,
             headColspan:1,
-            headTitleEvent:'monthclick',
+            headTitleEvent:'toyearclick',
             tdClick:'monthselect',
             getHeadTitle:function(date){
                 return date.getFullYear();
@@ -130,15 +168,22 @@ if (typeof jQuery === "undefined") { throw new Error("Requires jQuery") }
                     data.push(cellObj);
                 }
                 return data;
+            },
+            getNextDate:function(date){
+                return tools.findYear(date,1);
+            },
+            getPrevDate:function(date){
+                return tools.findYear(date,-1)
             }
-        },
-        'year':{
-            column:5,
-            row:4,
-            cell:20,
-            headColspan:3,
-            tdClick:'yearselect',
-            getHeadTitle:function(date){
+        };
+
+        modeParams[_consts.yearMode]={
+                column:5,
+                row:4,
+                cell:20,
+                headColspan:3,
+                tdClick:'yearselect',
+                getHeadTitle:function(date){
                 var firstYear = parseInt(date.getFullYear()/20)*20+1;
                 var lastYear = firstYear + 20;
                 return firstYear+' -- '+lastYear;
@@ -159,9 +204,16 @@ if (typeof jQuery === "undefined") { throw new Error("Requires jQuery") }
                     data.push(cellObj);
                 }
                 return data;
+            },
+            getNextDate:function(date){
+                return tools.findYear(date,this.cell);
+            },
+            getPrevDate:function(date){
+                return tools.findYear(date,-this.cell)
             }
         }
     };
+
 
     var renderTable = function(){
         var date = settings.date;
@@ -238,14 +290,21 @@ if (typeof jQuery === "undefined") { throw new Error("Requires jQuery") }
         zCalendarContainer.html(tableContainer);
     };
 
-    var setDate = function(date){
+    var setDate = function(date,mode){
         settings.date = date;
+        mode && (settings.mode = mode);
+        renderTable();
+    };
+
+    var setMode = function(mode){
+        settings.mode = mode;
 
         renderTable();
     };
 
     var _init = function(){
         // var data = getFormatData();
+        initModeParams(modeParams);
         renderTable();
     };
 

@@ -41,6 +41,13 @@ if (typeof jQuery === "undefined") { throw new Error("Requires jQuery") }
         },
         getFirstMonthInYear:function(date){
             return new Date(date.getFullYear());
+        },
+        compareDateWithoutTime:function(date1,date2){
+            if(date1.setHours(0,0,0,0) == date2.setHours(0,0,0,0)){
+                return true;
+            }else{
+                return false;
+            }
         }
     };
 
@@ -136,7 +143,8 @@ if (typeof jQuery === "undefined") { throw new Error("Requires jQuery") }
                     if(cellDate.getMonth()!== firstDate.getMonth()){
                         cellObj['disable'] = true;
                     }
-                    if(settings.selectedDate && cellDate.getTime() == settings.selectedDate.getTime()){
+                    if(settings.selectedDate
+                        && tools.compareDateWithoutTime(settings.selectedDate,cellDate)){
                         cellObj['active'] = true;
                     }
                     if(maxDate && cellDate.getTime()> maxDate){
